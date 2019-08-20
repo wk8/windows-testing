@@ -14,26 +14,52 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
 
+#Function to check AD services
+function CheckADServices()
+	{
+	Sleep 4
+	$svcs = "adws","dns","kdc","netlogon","ntds","lanmanserver","lanmanworkstation"
+    $svcstatus = 0
+        foreach ( $svc in $svcs ) {
+            if ( $(Get-Service -Name $svc).Status -notlike "Running") {
+                $svcstatus += 1
+            }
+        }
+
+	if ($svcstatus -gt 0) {
+		return $false
+		} else {
+		return $true
+		}
+	}
+
+
 # Change to working directory
 Set-Location -Path C:\gmsa
 
 # Script Logging - Feel free to comment out if you like.
 Start-Transcript -Path "C:\gmsa\Setup-gmsa.txt" -Append
 # Making sure the AD services are up and running
-Start-Sleep -Seconds 60
+
+do {$result = CheckADServices} while ($result -eq $false)
 Import-Module ActiveDirectory
 
 if (Get-AdGroupMember -Identity "Enterprise Admins" | Select-String -Pattern "gmsa-admin" -Quiet) {
     
 	# Add the KDS Root Key
     $KdsRootKey = Get-KdsRootKey
-    if ($null -eq $KdsRootKey.KeyId) {
+    if ($KdsRootKey -eq $null) {
+		# This command creates the KDS Root Key with a time 10 hours in the past.
+		# Active Directory will not premit use of this key until at least 10 hours has
+		# passed to allow distribution to all Domain Controllers in the domain.
+		# https://docs.microsoft.com/en-us/windows-server/security/group-managed-service-accounts/create-the-key-distribution-services-kds-root-key
         Add-KdsRootKey –EffectiveTime ((get-date).addhours(-10))
+		# Make sure we are PAST the 10 hour mark
         Start-Sleep -Seconds 15
     }
     
     # Directory for credspecs if not already created
-    mkdir -Path C:\ProgramData\docker\credentialspecs
+    mkdir -Path C:\ProgramData\docker\credentialspecs -ErrorAction SilentlyContinue
 
     # Get GenerateCredSpecResource PowerShell Module
     Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/kubernetes-sigs/windows-gmsa/master/scripts/GenerateCredentialSpecResource.ps1 -OutFile GenerateCredentialSpecResource.ps1

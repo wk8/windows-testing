@@ -20,7 +20,7 @@ Set-Location -Path C:\gmsa
 Start-Transcript -Path "C:\gmsa\Promote.txt"
 
 # Download gMSA Setup Script
-Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/extensions/gmsa-dc/v1/Setup-gMSA.ps1 -OutFile Setup-gMSA.ps1
+Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/wk8/windows-testing/wk8/gmsa-e2e/extensions/gmsa-dc/v1/Setup-gMSA.ps1 -OutFile Setup-gMSA.ps1
 
 #Install NuGet
 Install-PackageProvider -Name NuGet -Force

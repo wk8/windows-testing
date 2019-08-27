@@ -45,7 +45,7 @@
 		 }
 	},
 	"variables": { 
-       "initScriptUrl": "https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/extensions/gmsa-dc/v1/Promote-DC.ps1"
+       "initScriptUrl": "https://raw.githubusercontent.com/wk8/windows-testing/wk8/gmsa-e2e/extensions/gmsa-dc/v1/Promote-DC.ps1"
 	},
 	"resources": [
 	 {
